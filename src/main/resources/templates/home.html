@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+        .icon {
+            background: none;
+            border: none;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="row">
+    <div class="col-3 text-white bg-dark" style="height: 100vh">
+        <ul class="list-group">
+            <a th:each="group :${groups}" th:href="${'/?groupId='+group.id}">
+                <li th:classappend="${group == currentGroup} ? 'list-group-item bg-dark text-white' : 'list-group-item'"
+                    th:text="${group.name}"></li>
+            </a>
+            <a href="/group">
+                <button type="button" class="btn btn-primary form-control">
+                    Groups
+                </button>
+            </a>
+        </ul>
+    </div>
+    <div class="col-9 bg-light">
+        <div class="row">
+            <div class="col" th:if="${currentGroup != null}">
+                <form action="/" method="get">
+                    <input type="hidden" name="groupId" th:value="${currentGroup.id}">
+                    <div class="col">
+                        <select class="form-control" id="time-table" name="timeTableId" required>
+                            <option th:each="timeTable : ${timeTables}"
+                                    th:value="${timeTable.id}"
+                                    th:text="${timeTable.name}"
+                                    th:selected="${currentTimeTable == timeTable}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary ">Ok</button>
+                    </div>
+                </form>
+            </div>
+            <div th:if="${currentGroup != null}" class="col">
+                <a th:href="${'/timeTable/add?groupId='+currentGroup.id}">
+                    <button class="btn btn-primary ">Add TimeTable</button>
+                </a>
+            </div>
+        </div>
+        <div class="container">
+            <div th:if="${currentTimeTable != null}" class="row">
+                <div class="col-9">
+                    <ul th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).CREATED}"
+                        class="list-group">
+                        <li th:each="currentTimeTableStudent : ${currentTimeTableStudents}"
+                            th:text="${currentTimeTableStudent.getStudent().fullName()}"
+                            class="list-group-item">
+                        </li>
+                    </ul>
+                    <form th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).CREATED}"
+                          action="/student/add">
+                        <input type="hidden" name="timeTableId" th:value="${currentTimeTable.id}">
+                        <button type="submit" class="btn btn-primary">Add Student</button>
+                    </form>
+                    <table th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).IN_PROGRESS}"
+                           class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th th:each="attendance : ${eachStudentAttendance.get(currentTimeTableStudents.get(0))}"
+                                th:text="${attendance.lesson.date}"
+                                th:class="${attendance.lesson.date == currentLesson.date?'bg-dark text-white':''}"
+                            ></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="timeTableStudent : ${currentTimeTableStudents}">
+                            <td th:text="${timeTableStudent.student.fullName()}"></td>
+                            <td th:each="attendance : ${eachStudentAttendance.get(timeTableStudent)}">
+                                <form action="/studentAttendance" method="post">
+                                    <input type="hidden" name="studentAttendanceId" th:value="${attendance.id}">
+                                    <input type="hidden" name="currentLessonId" th:value="${currentLesson.id}">
+                                    <input type="hidden" name="timeTableId" th:value="${currentTimeTable.id}">
+                                    <button type="submit" class="icon"
+                                            th:text="${attendance.hasInLesson ? '✅':'❌'}"></button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <h1 class="text-white bg-primary text-center form-control"
+                        th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).COMPLETED}">
+                        TimeTableIsCompleted
+                    </h1>
+                    <table th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).COMPLETED}"
+                           class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th th:each="attendance : ${eachStudentAttendance.get(currentTimeTableStudents.get(0))}"
+                                th:text="${attendance.lesson.date}"
+                            ></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="timeTableStudent : ${currentTimeTableStudents}">
+                            <td th:text="${timeTableStudent.student.fullName()}"></td>
+                            <td th:each="attendance : ${eachStudentAttendance.get(timeTableStudent)}">
+                                <button type="submit" class="icon"
+                                        th:text="${attendance.hasInLesson ? '✅':'❌'}">
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-3">
+                    <form th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).CREATED}"
+                          action="/timeTable/start" method="post">
+                        <input type="hidden" name="timeTableId" th:value="${currentTimeTable.id}">
+                        <button class="btn btn-primary">Start Time Table</button>
+                    </form>
+                    <div th:if="${currentTimeTable.status == T(org.example.studycenter.entity.enums.TimeTableStatus).IN_PROGRESS}"
+                         class="d-flex justify-content-end">
+                        <div class="btn-group">
+                            <form action="/lesson/start" method="post"
+                                  th:if="${currentLesson.status == T(org.example.studycenter.entity.enums.LessonStatus).CREATED}">
+                                <input type="hidden" name="lessonId" th:value="${currentLesson.id}">
+                                <input type="hidden" name="timeTableId" th:value="${currentTimeTable.id}">
+                                <button class="btn btn-primary">Start Lesson</button>
+                            </form>
+                            <form action="/lesson/complete" method="post"
+                                  th:if="${currentLesson.status == T(org.example.studycenter.entity.enums.LessonStatus).IN_PROGRESS}">
+                                <input type="hidden" name="lessonId" th:value="${currentLesson.id}">
+                                <input type="hidden" name="timeTableId" th:value="${currentTimeTable.id}">
+                                <button class="btn btn-danger">End Lesson</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

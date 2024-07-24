@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+</head>
+<body>
+<div th:if="${lastCompletedTimeTable}" class="row">
+    <div class="col-4">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Student</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="timeTableStudent : ${timeTableStudents}">
+                <td th:text="${timeTableStudent.student.fullName()}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-1">
+        <form action="/timeTable/add" method="get">
+            <input type="hidden" th:if="${clear}" name="clear" th:value="${clear}">
+            <input type="hidden" name="groupId" th:value="${groupId}">
+            <input type="hidden" name="allBtn" value="true">
+            <button class="btn btn-primary">All ></button>
+        </form>
+    </div>
+    <div class="col-4">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Student</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="timeTableStudent : ${newTimeTableStudents}">
+                <td th:text="${timeTableStudent.student.fullName()}"></td>
+                <td>
+                    <form action="/timeTable/add" method="get">
+                        <input type="hidden" name="allBtn" value="true">
+                        <input type="hidden" name="groupId" th:value="${groupId}">
+                        <input type="hidden" name="removeTtsId" th:value="${timeTableStudent.id}">
+                        <button type="submit" class="btn btn-danger">remove</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Add TimeTable</h3>
+        </div>
+        <div class="card-body">
+            <form action="/timeTable/add" method="post">
+                <input type="hidden" name="groupId" th:value="${groupId}">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter timetable name"
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" class="form-control" id="price" name="price" placeholder="Enter price"
+                           required>
+                </div>
+                <div class="form-group">
+                    <select class="form-control" id="lessonPlan" name="lessonPlan" required>
+                        <option value="EVEN_DAYS">Juft kunlari</option>
+                        <option value="ODD_DAYS">Toq kunlari</option>
+                        <option th:if="${lastCompletedTimeTable}" th:selected="${lastCompletedTimeTable != null}"
+                                th:value="${lastCompletedTimeTable.lessonPlan}"
+                                th:text="${lastCompletedTimeTable.lessonPlan.equals('EVEN_DAYS') ? 'Juft kunlari':'Toq kunlari'}"
+                        >
+                        </option>
+                    </select>
+                </div>
+
+                <div th:each="timeTableStudent : ${newTimeTableStudents}">
+                    <input type="hidden" name="newTtsId" th:value="${timeTableStudent.id}"  />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Add TimeTable</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

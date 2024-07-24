@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Group</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+</head>
+<body>
+<h1 class="text-white text-center bg-dark">Groups</h1>
+<form action="group/add" method="post">
+    <input class="form-control" type="text" placeholder="Enter group name" name="name" required>
+    <button class="btn-primary" type="submit">Add Group</button>
+</form>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="group : ${groups}">
+        <td th:text="${group.id}"></td>
+        <td th:text="${group.name}"></td>
+        <td>
+            <div class="btn-group">
+                <form action="/group/update" method="get">
+                    <input type="hidden" name="id" th:value="${group.id}">
+                    <button class="btn btn-info">Edit</button>
+                </form>
+                <form action="/group/delete" method="post">
+                    <input type="hidden" name="id" th:value="${group.id}">
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<a href="/">
+    <h1 class="form-control text-center text-white bg-dark">Back</h1>
+</a>
+</body>
+</html>
